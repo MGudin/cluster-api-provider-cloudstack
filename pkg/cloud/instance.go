@@ -506,7 +506,9 @@ func (c *client) listVMInstanceDatadiskVolumeIDs(instanceID string) ([]string, e
 
 	var ret []string
 	for _, vol := range listVOLResp.Volumes {
-		ret = append(ret, vol.Id)
+		if !strings.HasPrefix(vol.Name, "pvc-") {
+			ret = append(ret, vol.Id)
+		}
 	}
 
 	return ret, nil
