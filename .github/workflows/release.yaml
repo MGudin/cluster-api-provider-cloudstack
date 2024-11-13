@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  IMAGE_NAME: capi-cloudstack-controller
+  TAG: ${{ github.ref_name }}
+jobs:
+  push:
+    name: Push images
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+        # Since repository owner might have uppercase letters
+      - name: Set registry variable
+        run: |
+          echo "REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+
+      - name: Build container images
+        run: make docker-build
+
+      - name: Log into registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Push tagged release
+        run: make docker-push
